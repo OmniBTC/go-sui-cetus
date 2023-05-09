@@ -8,7 +8,6 @@ import (
 
 	"github.com/coming-chat/go-sui/client"
 	suitypes "github.com/coming-chat/go-sui/types"
-	"github.com/omnibtc/go-sui-cetus/types"
 )
 
 type TokenFullList struct {
@@ -58,10 +57,10 @@ type PoolInfo struct {
 }
 
 type TokenConfigEvent struct {
-	CoinRegistryID types.SuiObjectIdType
-	CoinListOwner  types.SuiObjectIdType
-	PoolRegistryID types.SuiObjectIdType
-	PoolListOwner  types.SuiObjectIdType
+	CoinRegistryID string
+	CoinListOwner  string
+	PoolRegistryID string
+	PoolListOwner  string
 }
 
 type TokenModule struct {

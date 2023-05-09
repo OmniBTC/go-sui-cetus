@@ -6,7 +6,6 @@ import (
 
 	"github.com/coming-chat/go-sui/client"
 	suitypes "github.com/coming-chat/go-sui/types"
-	"github.com/omnibtc/go-sui-cetus/types"
 )
 
 const (
@@ -31,7 +30,7 @@ type CreatePoolAddLiquidityParams struct {
 }
 
 type FetchTickParams struct {
-	PoolID types.SuiObjectIdType
+	PoolID string
 	CoinPairType
 }
 

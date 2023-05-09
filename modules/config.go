@@ -2,7 +2,6 @@ package modules
 
 import (
 	suitypes "github.com/coming-chat/go-sui/types"
-	"github.com/omnibtc/go-sui-cetus/types"
 )
 
 type SdkOptions struct {
@@ -19,59 +18,59 @@ type SimulationAccount struct {
 }
 
 type TokenOptions struct {
-	TokenDisplay types.SuiObjectIdType
+	TokenDisplay string
 	Config       TokenConfig
 }
 
 type TokenConfig struct {
-	CoinRegistryID types.SuiObjectIdType
-	CoinListOwner  types.SuiObjectIdType
-	PoolRegistryID types.SuiObjectIdType
-	PoolListOwner  types.SuiObjectIdType
+	CoinRegistryID string
+	CoinListOwner  string
+	PoolRegistryID string
+	PoolListOwner  string
 }
 
 type LaunchpadOptions struct {
-	IDODisplay  types.SuiObjectIdType
-	IDORouter   types.SuiObjectIdType
-	LockDisplay types.SuiObjectIdType
-	LockRouter  types.SuiObjectIdType
+	IDODisplay  string
+	IDORouter   string
+	LockDisplay string
+	LockRouter  string
 	Config      LaunchpadConfig
 }
 
 type LaunchpadConfig struct {
-	PoolsID       types.SuiObjectIdType
-	AdminCapID    types.SuiObjectIdType
-	LockManagerID types.SuiObjectIdType
-	ConfigCapID   types.SuiObjectIdType
+	PoolsID       string
+	AdminCapID    string
+	LockManagerID string
+	ConfigCapID   string
 }
 
 type XWhaleOptions struct {
-	XWhaleDisplay    types.SuiObjectIdType
-	XWhaleRouter     types.SuiObjectIdType
-	DividendsDisplay types.SuiObjectIdType
-	DividendsRouter  types.SuiObjectIdType
-	BoosterDisplay   types.SuiObjectIdType
-	BoosterRouter    types.SuiObjectIdType
-	WhaleFaucet      types.SuiObjectIdType
+	XWhaleDisplay    string
+	XWhaleRouter     string
+	DividendsDisplay string
+	DividendsRouter  string
+	BoosterDisplay   string
+	BoosterRouter    string
+	WhaleFaucet      string
 	Config           XWhaleConfig
 }
 
 type XWhaleConfig struct {
-	XWhaleManagerID   types.SuiObjectIdType
-	LockManagerID     types.SuiObjectIdType
-	DividendManagerID types.SuiObjectIdType
+	XWhaleManagerID   string
+	LockManagerID     string
+	DividendManagerID string
 }
 
 type CLMMOptions struct {
-	CLMMDisplay types.SuiObjectIdType
-	CLMMRouter  types.SuiObjectIdType
+	CLMMDisplay string
+	CLMMRouter  string
 	Config      CLMMConfig
 }
 
 type CLMMConfig struct {
-	GlobalConfigID types.SuiObjectIdType
-	GlobalVaultID  types.SuiObjectIdType
-	PoolsID        types.SuiObjectIdType
+	GlobalConfigID string
+	GlobalVaultID  string
+	PoolsID        string
 }
 
 type sdkParsedOptions struct {

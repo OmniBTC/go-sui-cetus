@@ -3,8 +3,6 @@ package modules
 import (
 	"math/big"
 	"time"
-
-	"github.com/omnibtc/go-sui-cetus/types"
 )
 
 const (
@@ -25,11 +23,11 @@ type PositionRewarder struct {
 }
 
 type Position struct {
-	PosObjectID         types.SuiObjectIdType
-	Pool                types.SuiObjectIdType
-	Type                types.SuiAddressType
-	CoinTypeA           types.SuiAddressType
-	CoinTypeB           types.SuiAddressType
+	PosObjectID         string
+	Pool                string
+	Type                string
+	CoinTypeA           string
+	CoinTypeB           string
 	Index               int
 	Liquidity           string
 	TickLowerIndex      int
@@ -47,8 +45,8 @@ type Position struct {
 }
 
 type CoinPairType struct {
-	CoinTypeA types.SuiAddressType
-	CoinTypeB types.SuiAddressType
+	CoinTypeA string
+	CoinTypeB string
 }
 
 type PoolImmutables struct {
@@ -88,16 +86,16 @@ type Rewarder struct {
 }
 
 type InitEvent struct {
-	PoolsID        types.SuiObjectIdType
-	GlobalConfigID types.SuiObjectIdType
-	GlobalVaultID  types.SuiObjectIdType
+	PoolsID        string
+	GlobalConfigID string
+	GlobalVaultID  string
 }
 
 type CreatePartnerEvent struct {
 	Name         string
-	Recipient    types.SuiAddressType
-	PartnerID    types.SuiObjectIdType
-	PartnerCapID types.SuiObjectIdType
+	Recipient    string
+	PartnerID    string
+	PartnerCapID string
 	FeeRate      string
 	StartEpoch   string
 	EndEpoch     string
@@ -109,19 +107,19 @@ type FaucetEvent struct {
 }
 
 type CoinAsset struct {
-	CoinAddress  types.SuiAddressType
-	CoinObjectId types.SuiObjectIdType
+	CoinAddress  string
+	CoinObjectId string
 	Balance      *big.Int
 }
 
 type WarpSuiObject struct {
-	CoinAddress types.SuiAddressType
+	CoinAddress string
 	Balance     int
 }
 
 type FaucetCoin struct {
 	TransactionModule string
-	SuplyID           types.SuiObjectIdType
+	SuplyID           string
 	Decimals          int
 }
 

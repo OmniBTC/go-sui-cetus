@@ -5,8 +5,6 @@ import (
 	"math/big"
 )
 
-type SuiAddressType string
-type SuiObjectIdType string
 type BigNumber interface{}
 type SuiResource interface{}
 type SuiTxArg interface{}
@@ -32,10 +30,10 @@ type NFT struct {
 type SuiStructTag struct {
 	FullAddress   string
 	SourceAddress string
-	Address       SuiAddressType
+	Address       string
 	Module        string
 	Name          string
-	TypeArguments []SuiAddressType
+	TypeArguments []string
 }
 
 type SuiBasicTypes string
