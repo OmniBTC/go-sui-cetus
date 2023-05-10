@@ -7,7 +7,7 @@ import (
 	"github.com/coming-chat/go-sui/client"
 )
 
-const mainnet = "https://mainnet.sui.io"
+const mainnet = "https://fullnode.mainnet.sui.io"
 const testnet = "https://fullnode.testnet.sui.io"
 const useMainnet = false
 
@@ -18,7 +18,7 @@ func getMainnetConfig() (sdkParsedOptions, error) {
 			Gas:     100_000_000, // 0.1sui
 		},
 		Token: TokenOptions{
-			TokenDisplay: "",
+			TokenDisplay: "0x481fb627bf18bc93c02c41ada3cc8b574744ef23c9d5e3136637ae3076e71562",
 			Config: TokenConfig{
 				CoinRegistryID: "0xe0b8cb7e56d465965cac5c5fe26cba558de35d88b9ec712c40f131f72c600151",
 				CoinListOwner:  "0x1f6510ee7d8e2b39261bad012f0be0adbecfd75199450b7cbf28efab42dad083",
@@ -45,12 +45,10 @@ func getTestnetConfig() (sdkParsedOptions, error) {
 			Gas:     100_000_000, // 0.1sui
 		},
 		Token: TokenOptions{
-			TokenDisplay: "0x9dac946be53cf3dd137fa9289a23ecf146f8b87f3eb1a91cc323c93cdd26f8b3",
+			TokenDisplay: "0xc7c40602f81eee198f472e14c87cb9c7186496064adba06cef1768c8b1785512",
 			Config: TokenConfig{
-				CoinRegistryID: "0x2cc70e515a70f3f953363febbab5e01027a25fc01b729d9de29df3db326cc302",
-				CoinListOwner:  "0x44682678136f8e8b5a4ffbf9fe06a940b0ccbc9d46d9ae1a68aef2332c2e9cf1",
-				PoolRegistryID: "0xfd15ad9a6493fc3ff6b2fc922daeda50bba3df760fda32e53382b7f8dbcbc133",
-				PoolListOwner:  "0x494262448a7b8d07e6f00980b67f07a18432a5587d898c27651d18daa4c4c33f",
+				CoinRegistryID: "0xde9a5123749136ca9fe05b88777e322f2161fe4aa71e9c575d5e27a31b815d40",
+				PoolRegistryID: "0x7b7b399344838363ec96611f133c77b98042404559e326fd289885b88848a3c5",
 			},
 		},
 		CLMM: CLMMOptions{

@@ -78,6 +78,8 @@ type sdkParsedOptions struct {
 	simulationGas    uint64
 	coinRegistryID   *suitypes.HexData
 	poolRegistryID   *suitypes.HexData
+	coinListOwner    *suitypes.HexData
+	poolListOwner    *suitypes.HexData
 	tokenDisplay     *suitypes.HexData
 	clmmRouter       *suitypes.HexData
 }
@@ -94,6 +96,12 @@ func (s *SdkOptions) Parse() (options sdkParsedOptions, err error) {
 		return options, err
 	}
 	if options.tokenDisplay, err = suitypes.NewHexData(string(s.Token.TokenDisplay)); err != nil {
+		return options, err
+	}
+	if options.coinListOwner, err = suitypes.NewHexData(string(s.Token.Config.CoinListOwner)); err != nil {
+		return options, err
+	}
+	if options.poolListOwner, err = suitypes.NewHexData(string(s.Token.Config.PoolListOwner)); err != nil {
 		return options, err
 	}
 	if options.clmmRouter, err = suitypes.NewHexData(string(s.CLMM.CLMMRouter)); err != nil {

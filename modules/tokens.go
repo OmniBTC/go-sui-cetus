@@ -8,6 +8,7 @@ import (
 
 	"github.com/coming-chat/go-sui/client"
 	suitypes "github.com/coming-chat/go-sui/types"
+	"github.com/omnibtc/go-sui-cetus/types"
 )
 
 type TokenFullList struct {
@@ -163,7 +164,7 @@ func (m *TokenModule) FetchPoolList(ctx context.Context, listOwnerAddr string, f
 	}
 
 	// parse event
-	var pools []PoolInfo
+	var tmpPools []PoolInfo
 	err = parseEventWithContent(effects, "::lp_list::FetchPoolListEvent", func(event suitypes.SuiEvent) error {
 		var fullList PoolFullList
 		data, err := json.Marshal(event.ParsedJson)
@@ -174,15 +175,50 @@ func (m *TokenModule) FetchPoolList(ctx context.Context, listOwnerAddr string, f
 		if err != nil {
 			return err
 		}
-		pools = fullList.FullList.ValueList
+		tmpPools = fullList.FullList.ValueList
 		return nil
 	})
-
 	if err != nil {
-		setPoolsCache(pools)
+		return nil, err
 	}
 
-	return pools, err
+	objectIds := []suitypes.ObjectId{}
+	for _, pool := range tmpPools {
+		objId, err := suitypes.NewHexData(pool.Address)
+		if err != nil {
+			return nil, err
+		}
+		objectIds = append(objectIds, *objId)
+	}
+	objectInfos, err := m.c.MultiGetObjects(context.Background(), objectIds, &suitypes.SuiObjectDataOptions{
+		ShowType:    true,
+		ShowContent: true,
+		ShowOwner:   true,
+		ShowDisplay: true,
+	})
+	poolDetails := make([]PoolInfo, 0)
+	for _, poolObject := range objectInfos {
+		structTag, err := types.ParseMoveStructTag(*poolObject.Data.Type)
+		if err != nil {
+			continue
+		}
+		if len(structTag.TypeParams) != 2 {
+			continue
+		}
+
+		poolDetails = append(poolDetails, PoolInfo{
+			Address:      poolObject.Data.ObjectId.ShortString(),
+			Type:         *poolObject.Data.Type,
+			CoinAAddress: types.GetTypeTagFullName(structTag.TypeParams[0]),
+			CoinBAddress: types.GetTypeTagFullName(structTag.TypeParams[1]),
+		})
+	}
+
+	if err != nil {
+		setPoolsCache(poolDetails)
+	}
+
+	return poolDetails, err
 }
 
 // FetchWarpPoolList get pool & tokens, wrap token info into pool.TokenA & pool.TokenB

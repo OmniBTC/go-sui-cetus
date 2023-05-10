@@ -22,7 +22,7 @@ func (m *baseModule) dryRun(ctx context.Context,
 		return nil, err
 	}
 
-	tx, err := m.c.MoveCall(ctx, *m.config.simulationSigner, packageId, module, function, []string{}, arguments, gasObj, suitypes.NewSafeSuiBigInt(m.config.simulationGas))
+	tx, err := m.c.MoveCall(ctx, *m.config.simulationSigner, packageId, module, function, typeArgs, arguments, gasObj, suitypes.NewSafeSuiBigInt(m.config.simulationGas))
 	if err != nil {
 		return nil, err
 	}
