@@ -196,6 +196,9 @@ func (m *TokenModule) FetchPoolList(ctx context.Context, listOwnerAddr string, f
 		ShowOwner:   true,
 		ShowDisplay: true,
 	})
+	if err != nil {
+		return nil, err
+	}
 	poolDetails := make([]PoolInfo, 0)
 	for _, poolObject := range objectInfos {
 		structTag, err := types.ParseMoveStructTag(*poolObject.Data.Type)
@@ -234,23 +237,23 @@ func (m *TokenModule) FetchWarpPoolList(ctx context.Context, poolOwnerAddr, toke
 		return poolList, err
 	}
 
+	wrapPoolList := make([]PoolInfo, 0, len(poolList))
 	for i := range poolList {
+		poolItem := poolList[i]
 		for j := range tokenList {
-			if poolList[i].CoinAAddress == tokenList[j].Address {
-				poolList[i].TokenA = &tokenList[j]
+			if equalSuiCoinAddress(poolItem.CoinAAddress, tokenList[j].Address) {
+				poolItem.TokenA = &tokenList[j]
 			}
-			if poolList[i].CoinBAddress == tokenList[j].Address {
-				poolList[i].TokenB = &tokenList[j]
+			if equalSuiCoinAddress(poolItem.CoinBAddress, tokenList[j].Address) {
+				poolItem.TokenB = &tokenList[j]
 			}
 		}
-		if poolList[i].TokenA == nil {
-			return poolList, errors.New("token a not found")
+		if poolItem.TokenA == nil || poolItem.TokenB == nil {
+			continue
 		}
-		if poolList[i].TokenB == nil {
-			return poolList, errors.New("token b not found")
-		}
+		wrapPoolList = append(wrapPoolList, poolItem)
 	}
-	return poolList, nil
+	return wrapPoolList, nil
 }
 
 // getGasObject get a sui object for simulation gas
@@ -295,4 +298,13 @@ func parseEventWithContent(dryRunResponse *suitypes.DryRunTransactionBlockRespon
 	}
 
 	return nil
+}
+
+func equalSuiCoinAddress(x, y string) bool {
+	if x == y {
+		return true
+	}
+	x = strings.TrimLeft(x, "x0")
+	y = strings.TrimLeft(y, "x0")
+	return x == y
 }

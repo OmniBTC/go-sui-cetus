@@ -9,7 +9,7 @@ import (
 
 const mainnet = "https://fullnode.mainnet.sui.io"
 const testnet = "https://fullnode.testnet.sui.io"
-const useMainnet = false
+const useMainnet = true
 
 func getMainnetConfig() (sdkParsedOptions, error) {
 	options := SdkOptions{
