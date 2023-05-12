@@ -18,8 +18,9 @@ type SimulationAccount struct {
 }
 
 type TokenOptions struct {
-	TokenDisplay string
-	Config       TokenConfig
+	TokenDisplay           string
+	CreatePoolEventPackage string
+	Config                 TokenConfig
 }
 
 type TokenConfig struct {
@@ -74,14 +75,15 @@ type CLMMConfig struct {
 }
 
 type sdkParsedOptions struct {
-	simulationSigner *suitypes.Address
-	simulationGas    uint64
-	coinRegistryID   *suitypes.HexData
-	poolRegistryID   *suitypes.HexData
-	coinListOwner    *suitypes.HexData
-	poolListOwner    *suitypes.HexData
-	tokenDisplay     *suitypes.HexData
-	clmmRouter       *suitypes.HexData
+	simulationSigner       *suitypes.Address
+	simulationGas          uint64
+	coinRegistryID         *suitypes.HexData
+	poolRegistryID         *suitypes.HexData
+	coinListOwner          *suitypes.HexData
+	poolListOwner          *suitypes.HexData
+	tokenDisplay           *suitypes.HexData
+	clmmRouter             *suitypes.HexData
+	createPoolEventPackage string
 }
 
 func (s *SdkOptions) Parse() (options sdkParsedOptions, err error) {
@@ -107,6 +109,8 @@ func (s *SdkOptions) Parse() (options sdkParsedOptions, err error) {
 	if options.clmmRouter, err = suitypes.NewHexData(string(s.CLMM.CLMMRouter)); err != nil {
 		return options, err
 	}
+
+	options.createPoolEventPackage = s.Token.CreatePoolEventPackage
 
 	return
 }

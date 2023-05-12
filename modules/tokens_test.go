@@ -18,7 +18,8 @@ func getMainnetConfig() (sdkParsedOptions, error) {
 			Gas:     100_000_000, // 0.1sui
 		},
 		Token: TokenOptions{
-			TokenDisplay: "0x481fb627bf18bc93c02c41ada3cc8b574744ef23c9d5e3136637ae3076e71562",
+			TokenDisplay:           "0x481fb627bf18bc93c02c41ada3cc8b574744ef23c9d5e3136637ae3076e71562",
+			CreatePoolEventPackage: "0x1eabed72c53feb3805120a081dc15963c204dc8d091542592abaf7a35689b2fb",
 			Config: TokenConfig{
 				CoinRegistryID: "0xe0b8cb7e56d465965cac5c5fe26cba558de35d88b9ec712c40f131f72c600151",
 				CoinListOwner:  "0x1f6510ee7d8e2b39261bad012f0be0adbecfd75199450b7cbf28efab42dad083",
@@ -165,6 +166,92 @@ func TestTokenModule_FetchWarpPoolList(t *testing.T) {
 			if (err != nil) != tt.wantErr {
 				t.Errorf("TokenModule.FetchWarpPoolList() error = %v, wantErr %v", err, tt.wantErr)
 				return
+			}
+		})
+	}
+}
+
+func TestTokenModule_FetchPoolList(t *testing.T) {
+	type fields struct {
+		baseModule baseModule
+	}
+	type args struct {
+		ctx           context.Context
+		listOwnerAddr string
+		forceRefresh  bool
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		want    []PoolInfo
+		wantErr bool
+	}{
+		{
+			name: "fetch all token",
+			fields: fields{
+				baseModule: getTestBaseModule(),
+			},
+			args:    args{ctx: context.Background(), listOwnerAddr: "", forceRefresh: false},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			m := &TokenModule{
+				baseModule: tt.fields.baseModule,
+			}
+			_, err := m.FetchPoolList(tt.args.ctx, tt.args.listOwnerAddr, tt.args.forceRefresh)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("TokenModule.FetchPoolList() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+		})
+	}
+}
+
+func Test_shortCoinTypeWithPrefix(t *testing.T) {
+	type args struct {
+		address string
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{
+			name: "case 1",
+			args: args{
+				address: "0000000000000000000000000000000000000000000000000000000000000002::sui::SUI",
+			},
+			want: "0x2::sui::SUI",
+		},
+		{
+			name: "case 2",
+			args: args{
+				address: "934692a74595c4f5a0c026130eb2143eea6fc313742f5d7dd9e45fd6ddbb00f1::suime::SUIME",
+			},
+			want: "0x934692a74595c4f5a0c026130eb2143eea6fc313742f5d7dd9e45fd6ddbb00f1::suime::SUIME",
+		},
+		{
+			name: "case 3",
+			args: args{
+				address: "0x22",
+			},
+			want: "0x22",
+		},
+		{
+			name: "case 4",
+			args: args{
+				address: "0x022",
+			},
+			want: "0x22",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := shortCoinTypeWithPrefix(tt.args.address); got != tt.want {
+				t.Errorf("shortCoinTypeWithPrefix() = %v, want %v", got, tt.want)
 			}
 		})
 	}

@@ -34,6 +34,13 @@ type TokenInfo struct {
 	Address        string `json:"address"`
 }
 
+type PoolCreateEvent struct {
+	CoinTypeA   string `json:"coin_type_a"`
+	CoinTypeB   string `json:"coin_type_b"`
+	PoolId      string `json:"pool_id"`
+	TickSpacing int    `json:"tick_spacing"`
+}
+
 type PoolInfo struct {
 	Symbol            string `json:"symbol"`
 	Name              string `json:"name"`
@@ -131,14 +138,7 @@ func (m *TokenModule) FetchTokenList(ctx context.Context, listOwnerAddr string, 
 	return tokens, err
 }
 
-func (m *TokenModule) FetchPoolList(ctx context.Context, listOwnerAddr string, forceRefresh bool) ([]PoolInfo, error) {
-	if !forceRefresh {
-		pools := getPoolsCache()
-		if pools != nil {
-			return pools, nil
-		}
-	}
-
+func (m *TokenModule) fetchPoolByDryRun(ctx context.Context, listOwnerAddr string, forceRefresh bool) ([]PoolInfo, error) {
 	var (
 		effects   *suitypes.DryRunTransactionBlockResponse
 		err       error
@@ -216,7 +216,56 @@ func (m *TokenModule) FetchPoolList(ctx context.Context, listOwnerAddr string, f
 			CoinBAddress: types.GetTypeTagFullName(structTag.TypeParams[1]),
 		})
 	}
+	return poolDetails, nil
+}
 
+func (m *TokenModule) fetchPoolByEvents(ctx context.Context) ([]PoolInfo, error) {
+	pageSize := uint(2000)
+	hasMore := true
+	events := make([]suitypes.SuiEvent, 0)
+	var cursor *suitypes.EventId
+	moveEventType := m.config.createPoolEventPackage + "::factory::CreatePoolEvent"
+	for hasMore {
+		data, err := m.c.QueryEvents(ctx, suitypes.EventFilter{
+			MoveEventType: &moveEventType,
+		}, cursor, &pageSize, false)
+		if err != nil {
+			return nil, err
+		}
+		cursor = data.NextCursor
+		hasMore = data.HasNextPage
+		events = append(events, data.Data...)
+	}
+
+	poolDetails := make([]PoolInfo, 0)
+	for _, event := range events {
+		var poolCreateEvent PoolCreateEvent
+		data, err := json.Marshal(event.ParsedJson)
+		if err != nil {
+			return nil, err
+		}
+		err = json.Unmarshal(data, &poolCreateEvent)
+		if err != nil {
+			return nil, err
+		}
+		poolDetails = append(poolDetails, PoolInfo{
+			Address:      shortCoinTypeWithPrefix(poolCreateEvent.PoolId),
+			CoinAAddress: shortCoinTypeWithPrefix(poolCreateEvent.CoinTypeA),
+			CoinBAddress: shortCoinTypeWithPrefix(poolCreateEvent.CoinTypeB),
+		})
+	}
+	return poolDetails, nil
+}
+
+func (m *TokenModule) FetchPoolList(ctx context.Context, listOwnerAddr string, forceRefresh bool) ([]PoolInfo, error) {
+	if !forceRefresh {
+		pools := getPoolsCache()
+		if pools != nil {
+			return pools, nil
+		}
+	}
+
+	poolDetails, err := m.fetchPoolByEvents(ctx)
 	if err != nil {
 		setPoolsCache(poolDetails)
 	}
@@ -307,4 +356,8 @@ func equalSuiCoinAddress(x, y string) bool {
 	x = strings.TrimLeft(x, "x0")
 	y = strings.TrimLeft(y, "x0")
 	return x == y
+}
+
+func shortCoinTypeWithPrefix(address string) string {
+	return "0x" + strings.TrimLeft(address, "x0")
 }
