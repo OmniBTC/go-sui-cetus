@@ -42,22 +42,22 @@ type PoolCreateEvent struct {
 }
 
 type PoolInfo struct {
-	Symbol            string `json:"symbol"`
-	Name              string `json:"name"`
-	Decimals          int    `json:"decimals"`
-	Fee               string `json:"fee"`
-	TickSpacing       string `json:"tick_spacing"`
-	Type              string `json:"type"`
-	Address           string `json:"address"`
-	CoinAAddress      string `json:"coin_a_address"`
-	CoinBAddress      string `json:"coin_b_address"`
-	ProjectURL        string `json:"project_url"`
-	Sort              string `json:"sort"`
-	IsDisplayRewarder bool   `json:"is_display_rewarder"`
-	RewarderDisplay1  bool   `json:"rewarder_display_1"`
-	RewarderDisplay2  bool   `json:"rewarder_display_2"`
-	RewarderDisplay3  bool   `json:"rewarder_display_3"`
-	IsStable          bool   `json:"is_stable"`
+	// Symbol            string `json:"symbol"`
+	// Name              string `json:"name"`
+	// Decimals          int    `json:"decimals"`
+	// Fee               string `json:"fee"`
+	// TickSpacing       string `json:"tick_spacing"`
+	Type         string `json:"type"`
+	Address      string `json:"address"`
+	CoinAAddress string `json:"coin_a_address"`
+	CoinBAddress string `json:"coin_b_address"`
+	// ProjectURL        string `json:"project_url"`
+	// Sort              string `json:"sort"`
+	// IsDisplayRewarder bool   `json:"is_display_rewarder"`
+	// RewarderDisplay1  bool   `json:"rewarder_display_1"`
+	// RewarderDisplay2  bool   `json:"rewarder_display_2"`
+	// RewarderDisplay3  bool   `json:"rewarder_display_3"`
+	// IsStable          bool   `json:"is_stable"`
 
 	// use FetchWarpPoolList get pool with TokenA & TokenB info
 	TokenA *TokenInfo
