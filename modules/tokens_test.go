@@ -256,3 +256,69 @@ func Test_shortCoinTypeWithPrefix(t *testing.T) {
 		})
 	}
 }
+
+func Test_equalSuiCoinAddressByByte(t *testing.T) {
+	type args struct {
+		x string
+		y string
+	}
+	tests := []struct {
+		name string
+		args args
+		want bool
+	}{
+		{
+			name: "case1",
+			args: args{
+				x: "0x012",
+				y: "12",
+			},
+			want: true,
+		},
+		{
+			name: "case2",
+			args: args{
+				x: "0x012",
+				y: "123",
+			},
+			want: false,
+		},
+		{
+			name: "case3",
+			args: args{
+				x: "0x012",
+				y: "012",
+			},
+			want: true,
+		},
+		{
+			name: "case4",
+			args: args{
+				x: "0x012",
+				y: "0x012",
+			},
+			want: true,
+		},
+		{
+			name: "case5",
+			args: args{
+				x: "0x0123",
+				y: "12",
+			},
+			want: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := EqualSuiCoinAddress(tt.args.x, tt.args.y); got != tt.want {
+				t.Errorf("equalSuiCoinAddressByByte() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func BenchmarkEqualSuiCoinAddress(b *testing.B) {
+	for n := 0; n < b.N; n++ {
+		EqualSuiCoinAddress("0x2::sui::SUI", "0x00000000000002::sui::SUI")
+	}
+}

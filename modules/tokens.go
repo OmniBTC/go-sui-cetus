@@ -290,10 +290,10 @@ func (m *TokenModule) FetchWarpPoolList(ctx context.Context, poolOwnerAddr, toke
 	for i := range poolList {
 		poolItem := poolList[i]
 		for j := range tokenList {
-			if equalSuiCoinAddress(poolItem.CoinAAddress, tokenList[j].Address) {
+			if EqualSuiCoinAddress(poolItem.CoinAAddress, tokenList[j].Address) {
 				poolItem.TokenA = &tokenList[j]
 			}
-			if equalSuiCoinAddress(poolItem.CoinBAddress, tokenList[j].Address) {
+			if EqualSuiCoinAddress(poolItem.CoinBAddress, tokenList[j].Address) {
 				poolItem.TokenB = &tokenList[j]
 			}
 		}
@@ -349,13 +349,36 @@ func parseEventWithContent(dryRunResponse *suitypes.DryRunTransactionBlockRespon
 	return nil
 }
 
-func equalSuiCoinAddress(x, y string) bool {
-	if x == y {
-		return true
+func EqualSuiCoinAddress(x, y string) bool {
+	var (
+		ix   = 0
+		iy   = 0
+		c    rune
+		lenx = len(x)
+		leny = len(y)
+	)
+	for ix, c = range x {
+		if c == 'x' || c == '0' {
+			continue
+		} else {
+			break
+		}
 	}
-	x = strings.TrimLeft(x, "x0")
-	y = strings.TrimLeft(y, "x0")
-	return x == y
+	for iy, c = range y {
+		if c == 'x' || c == '0' {
+			continue
+		} else {
+			break
+		}
+	}
+	for ix < lenx && iy < leny {
+		if x[ix] != y[iy] {
+			break
+		}
+		ix++
+		iy++
+	}
+	return ix == lenx && iy == leny
 }
 
 func shortCoinTypeWithPrefix(address string) string {

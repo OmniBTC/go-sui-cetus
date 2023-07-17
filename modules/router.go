@@ -29,20 +29,21 @@ func TokenRouter(pools []PoolInfo, coinIn string, coinOut string) []Router {
 	for _, coinInPool := range coin2pools[coinIn] {
 		middleCoin := coinInPool.CoinBAddress
 		firstPoolIsA2B := true
-		if coinIn == middleCoin {
+		if EqualSuiCoinAddress(coinIn, middleCoin) {
 			firstPoolIsA2B = false
 			middleCoin = coinInPool.CoinAAddress
 		}
-		if middleCoin == coinOut {
+		if EqualSuiCoinAddress(middleCoin, coinOut) {
 			continue
 		}
 
 		for _, coinOutPool := range coin2pools[middleCoin] {
-			if coinOutPool.CoinAAddress == coinOut || coinOutPool.CoinBAddress == coinOut {
+			if EqualSuiCoinAddress(coinOutPool.CoinAAddress, coinOut) ||
+				EqualSuiCoinAddress(coinOutPool.CoinBAddress, coinOut) {
 				routers = append(routers, Router{
 					Pools: []PoolInfo{coinInPool, coinOutPool},
 					Path:  []string{coinIn, middleCoin, coinOut},
-					IsA2B: []bool{firstPoolIsA2B, coinOutPool.CoinBAddress == coinOut},
+					IsA2B: []bool{firstPoolIsA2B, EqualSuiCoinAddress(coinOutPool.CoinBAddress, coinOut)},
 				})
 			}
 		}
@@ -52,14 +53,14 @@ func TokenRouter(pools []PoolInfo, coinIn string, coinOut string) []Router {
 }
 
 func isPoolMatch(pool PoolInfo, coinA string, coinB string) (isPool bool, isA2b bool) {
-	if coinA == pool.CoinAAddress {
-		if coinB == pool.CoinBAddress {
+	if EqualSuiCoinAddress(coinA, pool.CoinAAddress) {
+		if EqualSuiCoinAddress(coinB, pool.CoinBAddress) {
 			return true, true
 		} else {
 			return false, false
 		}
-	} else if coinA == pool.CoinBAddress {
-		if coinB == pool.CoinAAddress {
+	} else if EqualSuiCoinAddress(coinA, pool.CoinBAddress) {
+		if EqualSuiCoinAddress(coinB, pool.CoinAAddress) {
 			return true, false
 		} else {
 			return false, false
