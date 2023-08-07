@@ -138,6 +138,56 @@ func (m *TokenModule) FetchTokenList(ctx context.Context, listOwnerAddr string, 
 	return tokens, err
 }
 
+// func (m *TokenModule) fetchPoolByDevInspect(ctx context.Context, listOwnerAddr string) ([]PoolInfo, error) {
+// 	var (
+// 		result    *suitypes.DevInspectResults
+// 		err       error
+// 		ownerAddr *suitypes.HexData
+// 	)
+// 	index := 0
+// 	limit := 512
+// 	if listOwnerAddr == "" {
+// 		result, err = m.divInspect(ctx,
+// 			*m.config.tokenDisplay,
+// 			"lp_list",
+// 			"fetch_all_registered_coin_info_with_limit",
+// 			[]string{},
+// 			[]any{*m.config.poolRegistryID, index, limit},
+// 		)
+// 	} else {
+// 		ownerAddr, err = suitypes.NewHexData(listOwnerAddr)
+// 		if err != nil {
+// 			return nil, err
+// 		}
+// 		result, err = m.divInspect(ctx,
+// 			*m.config.tokenDisplay,
+// 			"lp_list",
+// 			"fetch_full_list_with_limit",
+// 			[]string{},
+// 			[]any{*m.config.poolRegistryID, ownerAddr, index, limit},
+// 		)
+// 	}
+// 	// parse event
+// 	var tmpPools []PoolInfo
+// 	err = parseEvents(result.Events, "::lp_list::FetchPoolListEvent", func(event suitypes.SuiEvent) error {
+// 		var fullList PoolFullList
+// 		data, err := json.Marshal(event.ParsedJson)
+// 		if err != nil {
+// 			return err
+// 		}
+// 		err = json.Unmarshal(data, &fullList)
+// 		if err != nil {
+// 			return err
+// 		}
+// 		tmpPools = fullList.FullList.ValueList
+// 		return nil
+// 	})
+// 	if err != nil {
+// 		return nil, err
+// 	}
+
+// }
+
 func (m *TokenModule) fetchPoolByDryRun(ctx context.Context, listOwnerAddr string, forceRefresh bool) ([]PoolInfo, error) {
 	var (
 		effects   *suitypes.DryRunTransactionBlockResponse
@@ -184,7 +234,7 @@ func (m *TokenModule) fetchPoolByDryRun(ctx context.Context, listOwnerAddr strin
 
 	objectIds := []suitypes.ObjectId{}
 	for _, pool := range tmpPools {
-		objId, err := suitypes.NewHexData(pool.Address)
+		objId, err := suitypes.NewHexData(fixHex(pool.Address))
 		if err != nil {
 			return nil, err
 		}
@@ -254,7 +304,73 @@ func (m *TokenModule) fetchPoolByEvents(ctx context.Context) ([]PoolInfo, error)
 			CoinBAddress: shortCoinTypeWithPrefix(poolCreateEvent.CoinTypeB),
 		})
 	}
-	return poolDetails, nil
+
+	return m.filterPausePool(ctx, poolDetails)
+}
+
+func (m *TokenModule) filterPausePool(ctx context.Context, pools []PoolInfo) ([]PoolInfo, error) {
+	resPoolDetails := make([]PoolInfo, 0)
+	for i := 0; i < len(pools); i += 50 {
+		r := i + 50
+		if r > len(pools) {
+			r = len(pools)
+		}
+		ps := pools[i:r]
+		objectIds := []suitypes.ObjectId{}
+		for _, p := range ps {
+			objId, err := suitypes.NewHexData(fixHex(p.Address))
+			if err != nil {
+				return nil, err
+			}
+			objectIds = append(objectIds, *objId)
+		}
+
+		objectInfos, err := m.c.MultiGetObjects(context.Background(), objectIds, &suitypes.SuiObjectDataOptions{
+			ShowType:    true,
+			ShowContent: true,
+			ShowOwner:   true,
+			ShowDisplay: true,
+		})
+		if err != nil {
+			return nil, err
+		}
+
+		for _, poolObject := range objectInfos {
+			structTag, err := types.ParseMoveStructTag(*poolObject.Data.Type)
+			if err != nil {
+				continue
+			}
+			if len(structTag.TypeParams) != 2 {
+				continue
+			}
+			if nil == poolObject.Data ||
+				nil == poolObject.Data.Content ||
+				nil == poolObject.Data.Content.Data.MoveObject ||
+				nil == poolObject.Data.Content.Data.MoveObject.Fields {
+				continue
+			}
+			fieldMap, ok := poolObject.Data.Content.Data.MoveObject.Fields.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			isPause, ok := fieldMap["is_pause"].(bool)
+			if !ok {
+				continue
+			}
+			if isPause {
+				continue
+			}
+
+			resPoolDetails = append(resPoolDetails, PoolInfo{
+				Address:      poolObject.Data.ObjectId.ShortString(),
+				Type:         *poolObject.Data.Type,
+				CoinAAddress: types.GetTypeTagFullName(structTag.TypeParams[0]),
+				CoinBAddress: types.GetTypeTagFullName(structTag.TypeParams[1]),
+			})
+		}
+	}
+
+	return resPoolDetails, nil
 }
 
 func (m *TokenModule) FetchPoolList(ctx context.Context, listOwnerAddr string, forceRefresh bool) ([]PoolInfo, error) {
@@ -316,6 +432,26 @@ func getGasObject(c *client.Client, address *suitypes.Address, gas uint64) (*sui
 		return nil, err
 	}
 	return &coin.CoinObjectId, nil
+}
+
+// parseEvents use function f to parse event in response, witch type has substr
+func parseEvents(events []suitypes.SuiEvent, substr string, f func(event suitypes.SuiEvent) error) (err error) {
+	defer func() {
+		if merr := recover(); merr != nil {
+			err = errors.New("event parse failed")
+		}
+	}()
+
+	for _, event := range events {
+		if strings.Contains(event.Type, substr) {
+			err = f(event)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
 }
 
 // parseEventWithContent use function f to parse event in response, witch type has substr
@@ -383,4 +519,12 @@ func EqualSuiCoinAddress(x, y string) bool {
 
 func shortCoinTypeWithPrefix(address string) string {
 	return "0x" + strings.TrimLeft(address, "x0")
+}
+
+func fixHex(h string) string {
+	h = strings.TrimPrefix(h, "0x")
+	if len(h)%2 == 0 {
+		return h
+	}
+	return "0" + h
 }
