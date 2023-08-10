@@ -6,8 +6,10 @@ import (
 	"errors"
 	"strings"
 
-	"github.com/coming-chat/go-sui/client"
-	suitypes "github.com/coming-chat/go-sui/types"
+	"github.com/coming-chat/go-sui/v2/client"
+	"github.com/coming-chat/go-sui/v2/move_types"
+	"github.com/coming-chat/go-sui/v2/sui_types"
+	suitypes "github.com/coming-chat/go-sui/v2/types"
 	"github.com/omnibtc/go-sui-cetus/types"
 )
 
@@ -95,7 +97,7 @@ func (m *TokenModule) FetchTokenList(ctx context.Context, listOwnerAddr string, 
 	var (
 		effects   *suitypes.DryRunTransactionBlockResponse
 		err       error
-		ownerAddr *suitypes.HexData
+		ownerAddr *move_types.AccountAddress
 	)
 	if listOwnerAddr == "" {
 		effects, err = m.dryRun(ctx,
@@ -103,7 +105,7 @@ func (m *TokenModule) FetchTokenList(ctx context.Context, listOwnerAddr string, 
 			"coin_list", "fetch_all_registered_coin_info",
 			[]string{}, []any{*m.config.coinRegistryID})
 	} else {
-		ownerAddr, err = suitypes.NewHexData(listOwnerAddr)
+		ownerAddr, err = sui_types.NewAddressFromHex(listOwnerAddr)
 		if err != nil {
 			return nil, err
 		}
@@ -138,61 +140,11 @@ func (m *TokenModule) FetchTokenList(ctx context.Context, listOwnerAddr string, 
 	return tokens, err
 }
 
-// func (m *TokenModule) fetchPoolByDevInspect(ctx context.Context, listOwnerAddr string) ([]PoolInfo, error) {
-// 	var (
-// 		result    *suitypes.DevInspectResults
-// 		err       error
-// 		ownerAddr *suitypes.HexData
-// 	)
-// 	index := 0
-// 	limit := 512
-// 	if listOwnerAddr == "" {
-// 		result, err = m.divInspect(ctx,
-// 			*m.config.tokenDisplay,
-// 			"lp_list",
-// 			"fetch_all_registered_coin_info_with_limit",
-// 			[]string{},
-// 			[]any{*m.config.poolRegistryID, index, limit},
-// 		)
-// 	} else {
-// 		ownerAddr, err = suitypes.NewHexData(listOwnerAddr)
-// 		if err != nil {
-// 			return nil, err
-// 		}
-// 		result, err = m.divInspect(ctx,
-// 			*m.config.tokenDisplay,
-// 			"lp_list",
-// 			"fetch_full_list_with_limit",
-// 			[]string{},
-// 			[]any{*m.config.poolRegistryID, ownerAddr, index, limit},
-// 		)
-// 	}
-// 	// parse event
-// 	var tmpPools []PoolInfo
-// 	err = parseEvents(result.Events, "::lp_list::FetchPoolListEvent", func(event suitypes.SuiEvent) error {
-// 		var fullList PoolFullList
-// 		data, err := json.Marshal(event.ParsedJson)
-// 		if err != nil {
-// 			return err
-// 		}
-// 		err = json.Unmarshal(data, &fullList)
-// 		if err != nil {
-// 			return err
-// 		}
-// 		tmpPools = fullList.FullList.ValueList
-// 		return nil
-// 	})
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// }
-
 func (m *TokenModule) fetchPoolByDryRun(ctx context.Context, listOwnerAddr string, forceRefresh bool) ([]PoolInfo, error) {
 	var (
 		effects   *suitypes.DryRunTransactionBlockResponse
 		err       error
-		ownerAddr *suitypes.HexData
+		ownerAddr *move_types.AccountAddress
 	)
 	if listOwnerAddr == "" {
 		effects, err = m.dryRun(ctx,
@@ -200,7 +152,7 @@ func (m *TokenModule) fetchPoolByDryRun(ctx context.Context, listOwnerAddr strin
 			"lp_list", "fetch_all_registered_coin_info",
 			[]string{}, []any{*m.config.poolRegistryID})
 	} else {
-		ownerAddr, err = suitypes.NewHexData(listOwnerAddr)
+		ownerAddr, err = sui_types.NewAddressFromHex(listOwnerAddr)
 		if err != nil {
 			return nil, err
 		}
@@ -232,9 +184,9 @@ func (m *TokenModule) fetchPoolByDryRun(ctx context.Context, listOwnerAddr strin
 		return nil, err
 	}
 
-	objectIds := []suitypes.ObjectId{}
+	objectIds := []sui_types.ObjectID{}
 	for _, pool := range tmpPools {
-		objId, err := suitypes.NewHexData(fixHex(pool.Address))
+		objId, err := sui_types.NewObjectIdFromHex(pool.Address)
 		if err != nil {
 			return nil, err
 		}
@@ -316,9 +268,9 @@ func (m *TokenModule) filterPausePool(ctx context.Context, pools []PoolInfo) ([]
 			r = len(pools)
 		}
 		ps := pools[i:r]
-		objectIds := []suitypes.ObjectId{}
+		objectIds := []sui_types.ObjectID{}
 		for _, p := range ps {
-			objId, err := suitypes.NewHexData(fixHex(p.Address))
+			objId, err := sui_types.NewObjectIdFromHex(p.Address)
 			if err != nil {
 				return nil, err
 			}
@@ -422,7 +374,7 @@ func (m *TokenModule) FetchWarpPoolList(ctx context.Context, poolOwnerAddr, toke
 }
 
 // getGasObject get a sui object for simulation gas
-func getGasObject(c *client.Client, address *suitypes.Address, gas uint64) (*suitypes.HexData, error) {
+func getGasObject(c *client.Client, address *sui_types.SuiAddress, gas uint64) (*sui_types.ObjectID, error) {
 	coins, err := c.GetSuiCoinsOwnedByAddress(context.Background(), *address)
 	if err != nil {
 		return nil, err

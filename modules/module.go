@@ -3,8 +3,9 @@ package modules
 import (
 	"context"
 
-	"github.com/coming-chat/go-sui/client"
-	suitypes "github.com/coming-chat/go-sui/types"
+	"github.com/coming-chat/go-sui/v2/client"
+	"github.com/coming-chat/go-sui/v2/sui_types"
+	suitypes "github.com/coming-chat/go-sui/v2/types"
 )
 
 type baseModule struct {
@@ -13,7 +14,7 @@ type baseModule struct {
 }
 
 func (m *baseModule) dryRun(ctx context.Context,
-	packageId suitypes.ObjectId,
+	packageId sui_types.ObjectID,
 	module, function string,
 	typeArgs []string,
 	arguments []any) (*suitypes.DryRunTransactionBlockResponse, error) {
@@ -27,5 +28,5 @@ func (m *baseModule) dryRun(ctx context.Context,
 		return nil, err
 	}
 
-	return m.c.DryRunTransaction(ctx, tx)
+	return m.c.DryRunTransaction(ctx, tx.TxBytes)
 }

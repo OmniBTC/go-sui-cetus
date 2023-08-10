@@ -4,8 +4,8 @@ import (
 	"context"
 	"strconv"
 
-	"github.com/coming-chat/go-sui/client"
-	suitypes "github.com/coming-chat/go-sui/types"
+	"github.com/coming-chat/go-sui/v2/client"
+	suitypes "github.com/coming-chat/go-sui/v2/types"
 )
 
 const (

@@ -1,7 +1,7 @@
 package suicetus
 
 import (
-	"github.com/coming-chat/go-sui/client"
+	"github.com/coming-chat/go-sui/v2/client"
 	"github.com/omnibtc/go-sui-cetus/modules"
 )
 

@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/coming-chat/go-sui/client"
+	"github.com/coming-chat/go-sui/v2/client"
 )
 
 const mainnet = "https://fullnode.mainnet.sui.io"
